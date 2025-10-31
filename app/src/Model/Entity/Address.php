@@ -44,5 +44,7 @@ class Address extends Entity
     protected $_hidden = [
         'foreign_table',
         'foreign_id',
+        'state',
+        'city',
     ];
 }
