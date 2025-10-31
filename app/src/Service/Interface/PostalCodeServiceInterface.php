@@ -1,5 +1,5 @@
 <?php
-namespace App\Service;
+namespace App\Service\Interface;
 
 interface PostalCodeServiceInterface
 {
