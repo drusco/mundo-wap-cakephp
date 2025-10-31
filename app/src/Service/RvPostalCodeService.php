@@ -15,6 +15,6 @@ class RvPostalCodeService implements PostalCodeServiceInterface
     
     public function fetchPostalCode(string $postalCode): ?array
     {
-        
+        return null;
     }
 }
