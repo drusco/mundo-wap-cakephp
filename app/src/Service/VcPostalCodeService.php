@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Service;
 
 use Cake\Http\Client;
+use App\Service\Interface\PostalCodeServiceInterface;
 
 /**
  * Service to handle postal code information using Via CEP API.

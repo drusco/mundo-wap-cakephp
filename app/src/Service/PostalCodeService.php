@@ -1,7 +1,7 @@
 <?php
 namespace App\Service;
 
-use App\Service\PostalCodeServiceInterface;
+use App\Service\Interface\PostalCodeServiceInterface;
 
 /**
  * Service to handle postal code using fallback logic.

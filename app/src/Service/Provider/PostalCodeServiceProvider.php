@@ -1,7 +1,7 @@
 <?php
 namespace App\Service\Provider;
 
-use App\Service\PostalCodeServiceInterface;
+use App\Service\Interface\PostalCodeServiceInterface;
 use App\Service\RvPostalCodeService;
 use Cake\Core\ContainerInterface;
 use Cake\Core\ServiceProvider;
