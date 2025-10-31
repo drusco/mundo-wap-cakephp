@@ -100,7 +100,7 @@ class AddressesTable extends Table
         $validator
             ->scalar('complement')
             ->maxLength('complement', 200)
-            ->notEmptyString('complement');
+            ->allowEmptyString('complement');
 
         return $validator;
     }
