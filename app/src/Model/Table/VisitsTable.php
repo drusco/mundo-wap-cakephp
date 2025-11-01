@@ -7,6 +7,7 @@ use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 
 /**
@@ -73,6 +74,34 @@ class VisitsTable extends Table
         $validator
             ->integer('duration')
             ->notEmptyString('duration');
+
+        $this->validatorAddress($validator);
+
+        return $validator;
+    }
+
+    /**
+     * Custom validation for address field.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance.
+     * @return \Cake\Validation\Validator
+     */
+    public function validatorAddress(Validator $validator): Validator
+    {
+        $validator
+            ->requirePresence('address', 'create', 'Address is required')
+            ->notEmptyArray('address', 'Address cannot be empty')
+            ->add('address', 'type', [
+                'rule' => fn($value) => is_array($value),
+                'message' => 'Address must be an array',
+            ]);
+
+        // Load the Addresses table to get its validator
+        $addressesTable = TableRegistry::getTableLocator()->get('Addresses');
+        $addressValidator = $addressesTable->getValidator('default');
+
+        // Add the nested validator for the address field
+        $validator->addNested('address', $addressValidator);
 
         return $validator;
     }
