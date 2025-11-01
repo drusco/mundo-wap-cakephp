@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use DateTime;
+use Cake\Http\Exception\BadRequestException;
+
 /**
  * Visits Controller
  *
@@ -12,12 +15,39 @@ class VisitsController extends AppController
 {
     /**
      * Index method
+     * Lists all visits for a given date provided as query parameter.
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function index(): void
     {
-        $visits = $this->paginate($this->Visits);
+        // Accept GEt requests only when listing visits
+        $this->request->allowMethod(['get']);
+
+        $date = $this->request->getQuery('date');
+        
+        if(empty($date)) {
+            // enforce date query parameter
+            throw new BadRequestException('A date query parameter is required');
+        }
+
+        $visitDate = DateTime::createFromFormat('d-m-Y', $date);
+
+        if(!$visitDate) {
+            // enforce valid date format
+            throw new BadRequestException('The date query parameter format is invalid. Expected format: dd-mm-yyyy');
+        }
+
+        // Get the visits by date and paginate
+        $visits = $this->paginate(
+            $this->Visits
+            ->find()
+            ->where([
+                'date' => $visitDate
+            ])
+        );
+
+        // Return the filtered visits
         $this->set('visits', $visits);
         $this->viewBuilder()->setOption('serialize', ['visits']);
     }
