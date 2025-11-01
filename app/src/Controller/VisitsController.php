@@ -129,23 +129,4 @@ class VisitsController extends AppController
         $this->set(compact('visit'));
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id Visit id.
-     * @return \Cake\Http\Response|null|void Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $visit = $this->Visits->get($id);
-        if ($this->Visits->delete($visit)) {
-            $this->Flash->success(__('The visit has been deleted.'));
-        } else {
-            $this->Flash->error(__('The visit could not be deleted. Please, try again.'));
-        }
-
-        return $this->redirect(['action' => 'index']);
-    }
 }
