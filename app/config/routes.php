@@ -45,17 +45,11 @@ return static function (RouteBuilder $routes) {
     $routes->setRouteClass(DashedRoute::class);
 
     $routes->scope('/', function (RouteBuilder $builder) {
-        /*
-         * Here, we are connecting '/' (base path) to a controller called 'Pages',
-         * its action called 'display', and we pass a param to select the view file
-         * to use (in this case, templates/Pages/home.php)...
-         */
-        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+        // Parse specified extensions from URLs
+        $builder->setExtensions(['json']);
 
-        /*
-         * ...and connect the rest of 'Pages' controller's URLs.
-         */
-        $builder->connect('/pages/*', 'Pages::display');
+        // Connect API actions here.
+        $builder->connect('/visits', ['controller' => 'Visits', 'action' => 'index', '_ext' => 'json']);
 
         /*
          * Connect catchall routes for all controllers.
