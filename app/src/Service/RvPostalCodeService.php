@@ -17,6 +17,26 @@ class RvPostalCodeService implements PostalCodeServiceInterface
     
     public function fetchPostalCode(string $postalCode): ?array
     {
+        // call the API with the given postal code
+        $response = $this->http->get($this->apiUrl, [
+            'cep' => $postalCode,
+            'formato' => 'json',
+        ]);
+
+        if($response->isOk()) {
+            // parse the json response
+            $data = $response->getJson();
+            if ($data && isset($data['resultado']) && $data['resultado'] != 0) {
+                return [
+                    'postal_code' => $postalCode,
+                    'sublocality' => $data['bairro'],
+                    'street' => $data['tipo_logradouro'] . ' ' . $data['logradouro'],
+                    'city' => $data['cidade'],
+                    'state' => $data['uf'],
+                ];
+            }
+        }
+
         return null;
     }
 }
