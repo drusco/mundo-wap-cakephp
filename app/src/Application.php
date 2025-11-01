@@ -75,6 +75,17 @@ class Application extends BaseApplication
      */
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
+        // Cross Site Request Forgery (CSRF) Protection Middleware
+        // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
+        $csrfMiddleware = new CsrfProtectionMiddleware([
+            'httponly' => true,
+        ]);
+
+        // Skip CSRF check for JSON requests
+        $csrfMiddleware->skipCheckCallback(callback: function ($request): mixed {
+            return $request->is('json');
+        });
+        
         $middlewareQueue
             // Catch any exceptions in the lower layers,
             // and make an error page/response
@@ -98,11 +109,8 @@ class Application extends BaseApplication
             // https://book.cakephp.org/4/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
 
-            // Cross Site Request Forgery (CSRF) Protection Middleware
-            // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            ->add(new CsrfProtectionMiddleware([
-                'httponly' => true,
-            ]));
+            
+            ->add($csrfMiddleware);
 
         return $middlewareQueue;
     }
