@@ -9,8 +9,11 @@ use App\Service\Interface\PostalCodeServiceInterface;
  */
 class RvPostalCodeService implements PostalCodeServiceInterface
 {
-    private Client $httpClient;
     private string $apiUrl = 'http://cep.republicavirtual.com.br/web_cep.php';
+
+    public function __construct(
+        private Client $http,
+    ){}
     
     public function fetchPostalCode(string $postalCode): ?array
     {

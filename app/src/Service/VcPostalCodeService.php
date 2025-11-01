@@ -9,8 +9,11 @@ use App\Service\Interface\PostalCodeServiceInterface;
  */
 class VcPostalCodeService implements PostalCodeServiceInterface
 {
-    private Client $httpClient;
     private string $apiUrl = 'https://viacep.com.br/ws/';
+
+    public function __construct(
+        private Client $http,
+    ){}
     
     public function fetchPostalCode(string $postalCode): ?array
     {
