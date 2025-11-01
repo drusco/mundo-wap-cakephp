@@ -50,6 +50,7 @@ return static function (RouteBuilder $routes) {
 
         // Connect API actions here.
         $builder->connect('/visits', ['controller' => 'Visits', 'action' => 'index', '_ext' => 'json']);
+        $builder->connect('/visits/add', ['controller' => 'Visits', 'action' => 'add', '_ext' => 'json']);
 
         /*
          * Connect catchall routes for all controllers.

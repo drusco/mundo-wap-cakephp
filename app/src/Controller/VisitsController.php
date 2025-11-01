@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use DateTime;
+use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\BadRequestException;
 
 /**
@@ -31,7 +31,7 @@ class VisitsController extends AppController
             throw new BadRequestException('A date query parameter is required');
         }
 
-        $visitDate = DateTime::createFromFormat('d-m-Y', $date);
+        $visitDate = \DateTime::createFromFormat('d-m-Y', $date);
 
         if(!$visitDate) {
             // enforce valid date format
@@ -70,22 +70,39 @@ class VisitsController extends AppController
 
     /**
      * Add method
+     * Create a new visit record
      *
      * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
      */
-    public function add()
+    public function add(): void
     {
-        $visit = $this->Visits->newEmptyEntity();
-        if ($this->request->is('post')) {
-            $visit = $this->Visits->patchEntity($visit, $this->request->getData());
-            if ($this->Visits->save($visit)) {
-                $this->Flash->success(__('The visit has been saved.'));
+        // enforce POST method for adding a new visit
+        $this->request->allowMethod(['post']);
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The visit could not be saved. Please, try again.'));
+        $data = $this->request->getData();
+
+        // create and patch a new visit entity
+        $visit = $this->Visits->newEmptyEntity();
+        $visit = $this->Visits->patchEntity($visit, $data);
+
+        if($visit->hasErrors()) {
+            // throw if validation errors exist
+            throw new BadRequestException( json_encode($visit->getErrors()) );
         }
-        $this->set(compact('visit'));
+        
+       if (!$this->Visits->save($visit)) {
+        // throw if saving to the database fails
+           throw new InternalErrorException('The visit could not be saved.');
+       }
+
+        // Indicate success
+        $this->set('success', true);
+        $this->set('message', 'The visit has been saved.');
+
+        // Add the created status code
+        $this->response = $this->response->withStatus(201);
+        // Serialize the success response
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
 
     /**
