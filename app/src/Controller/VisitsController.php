@@ -96,8 +96,10 @@ class VisitsController extends AppController
        }
 
         // Indicate success
-        $this->set('success', true);
-        $this->set('message', 'The visit has been saved.');
+        $this->set([
+            'success' => true,
+            'message' => 'The visit has been saved.'
+        ]);
 
         // Add the created status code
         $this->response = $this->response->withStatus(201);

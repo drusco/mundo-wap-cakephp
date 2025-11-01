@@ -80,8 +80,8 @@ class VisitsTable extends Table
     public function beforeMarshal(EventInterface $event, \ArrayObject $data, \ArrayObject $options): void
     {
         // convert boolean completed to integer
-        if (isset($data['completed'])) {
-            $data['completed'] = filter_var($data['completed'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+        if (isset($data['completed']) && is_bool($data['completed'])) {
+            $data['completed'] = (int) $data['completed'];
         }
 
         // convert date from dd-mm-yyyy to yyyy-mm-dd
