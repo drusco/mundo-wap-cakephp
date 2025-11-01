@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -51,12 +52,12 @@ class VisitsTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->date('date')
+            ->date('date', ['dmy'], 'Expected format: dd-mm-yyyy')
             ->requirePresence('date', 'create')
             ->notEmptyDate('date');
 
         $validator
-            ->integer('completed')
+            ->boolean('completed')
             ->allowEmpty('completed');
 
         $validator
@@ -74,5 +75,21 @@ class VisitsTable extends Table
             ->notEmptyString('duration');
 
         return $validator;
+    }
+
+    public function beforeMarshal(EventInterface $event, \ArrayObject $data, \ArrayObject $options): void
+    {
+        // convert boolean completed to integer
+        if (isset($data['completed'])) {
+            $data['completed'] = filter_var($data['completed'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+        }
+
+        // convert date from dd-mm-yyyy to yyyy-mm-dd
+        if (isset($data['date'])) {
+            $date = \DateTime::createFromFormat('d-m-Y', $data['date']);
+            if ($date) {
+                $data['date'] = $date;
+            }
+        }
     }
 }
