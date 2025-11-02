@@ -53,22 +53,6 @@ class VisitsController extends AppController
     }
 
     /**
-     * View method
-     *
-     * @param string|null $id Visit id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function view($id = null)
-    {
-        $visit = $this->Visits->get($id, [
-            'contain' => [],
-        ]);
-
-        $this->set(compact('visit'));
-    }
-
-    /**
      * Add method
      * Create a new visit record
      *
