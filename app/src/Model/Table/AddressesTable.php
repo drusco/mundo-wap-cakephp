@@ -53,13 +53,11 @@ class AddressesTable extends Table
         $validator
             ->scalar('foreign_table')
             ->maxLength('foreign_table', 100)
-            ->requirePresence('foreign_table', 'create')
-            ->notEmptyString('foreign_table');
+            ->allowEmpty('foreign_table');
 
         $validator
             ->integer('foreign_id')
-            ->requirePresence('foreign_id', 'create')
-            ->notEmptyString('foreign_id');
+            ->allowEmpty('foreign_id');
 
         $validator
             ->scalar('postal_code')
@@ -92,7 +90,7 @@ class AddressesTable extends Table
             ->notEmptyString('street');
 
         $validator
-            ->scalar('street_number')
+            ->integer('street_number')
             ->maxLength('street_number', 200)
             ->requirePresence('street_number', 'create')
             ->notEmptyString('street_number');

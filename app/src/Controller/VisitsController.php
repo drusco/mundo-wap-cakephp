@@ -89,11 +89,14 @@ class VisitsController extends AppController
             // throw if validation errors exist
             throw new BadRequestException( json_encode($visit->getErrors()) );
         }
+
+        // Attach the address to the visit
+        $visit->set('address', $data['address']);
         
-       if (!$this->Visits->save($visit)) {
+        if (!$this->Visits->save($visit)) {
         // throw if saving to the database fails
            throw new InternalErrorException('The visit could not be saved.');
-       }
+        }
 
         // Indicate success
         $this->set([

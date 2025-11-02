@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -119,6 +120,23 @@ class VisitsTable extends Table
             if ($date) {
                 $data['date'] = $date;
             }
+        }
+    }
+    public function afterSave(EventInterface $event, EntityInterface $visit, \ArrayObject $options): void
+    {
+        // If the visit has an associated address, ensure it's linked correctly
+        if ($visit->has('address')) {
+            $addressData = $visit->get('address');
+
+            $AddressesTable = TableRegistry::getTableLocator()->get('Addresses');
+            $address = $AddressesTable->newEntity($addressData);
+
+            // Add foreign key fields to address data
+            $address->set('foreign_table', 'visits');
+            $address->set('foreign_id', $visit->id);
+
+            // Save the address and link it to the visit
+            $AddressesTable->saveOrFail($address);
         }
     }
 }
