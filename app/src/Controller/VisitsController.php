@@ -42,6 +42,7 @@ class VisitsController extends AppController
         $visits = $this->paginate(
             $this->Visits
             ->find()
+            ->contain(['Addresses'])
             ->where([
                 'date' => $visitDate
             ])
