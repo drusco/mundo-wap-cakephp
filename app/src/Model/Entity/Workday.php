@@ -34,6 +34,35 @@ class Workday extends Entity
     ];
 
     protected $_hidden = [
-        'id'
+        'id',
+        'formatted_date'
     ];
+
+    protected $_virtual = [
+        'formatted_date',
+    ];
+
+    /** Get formatted date as dd-mm-yyyy */
+    protected function _getFormattedDate(): ?string
+    {
+        if (isset($this->date)) {
+            return $this->date->format('d-m-Y');
+        }
+
+        return null;
+    }
+
+    public function jsonSerialize(): array
+    {
+        $data = parent::jsonSerialize();
+        // Replace date with formatted date
+        if (isset($data['date'])) {
+            $data['date'] = $this->formatted_date;
+        }
+
+        // show completed as boolean
+        $data['completed'] = (bool) $data['completed'];
+
+        return $data;
+    }
 }
