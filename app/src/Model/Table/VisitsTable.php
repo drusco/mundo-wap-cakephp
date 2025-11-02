@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Model\Entity\Visit;
-use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -135,7 +134,7 @@ class VisitsTable extends Table
         // Set the duration value based on the forms and product minutes
         $formsMinutes = (int)$visit->forms * 15;
         $productsMinutes = (int) $visit->products * 5;
-        
+
         $visit->set('duration', $formsMinutes + $productsMinutes);
     }
 
@@ -145,15 +144,35 @@ class VisitsTable extends Table
         if ($visit->has('address')) {
             $addressData = $visit->get('address');
 
-            $AddressesTable = TableRegistry::getTableLocator()->get('Addresses');
-            $address = $AddressesTable->newEntity($addressData);
+            $addressesTable = TableRegistry::getTableLocator()->get('Addresses');
+            $address = $addressesTable->newEntity($addressData);
 
             // Add foreign key fields to address data
             $address->set('foreign_table', 'visits');
             $address->set('foreign_id', $visit->id);
 
             // Save the address and link it to the visit
-            $AddressesTable->saveOrFail($address);
+            $addressesTable->saveOrFail($address);
         }
+
+        // Find or create a workday using the visit date
+        $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
+        
+        /** @var \App\Model\Entity\Workday */
+        $workday = $workdaysTable->findOrCreate(
+            ['date' => $visit->date],
+            function ($entity) use ($visit): void {
+                // create a new workday if it does not exist already
+                $entity->set('date', $visit->date);
+            }
+        );
+
+        // update the visits counter
+        $workday->set('visits', $workday->visits + 1);
+        // update the duration total
+        $workday->set('duration', $workday->duration + $visit->duration);
+
+        $workdaysTable->saveOrFail($workday);
+
     }
 }
