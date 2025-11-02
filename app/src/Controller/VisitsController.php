@@ -150,6 +150,11 @@ class VisitsController extends AppController
             throw new BadRequestException(json_encode($visit->getErrors()));
         }
 
+        if (!$this->Visits->save($visit)) {
+            // throw if saving to the database fails
+           throw new InternalErrorException('The visit could not be saved.');
+        }
+
         // indicate that the visit was updated correctly
         $this->set([
             'success' => true,
