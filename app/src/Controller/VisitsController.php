@@ -127,7 +127,7 @@ class VisitsController extends AppController
      * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Http\Exception\NotFoundException When record not found.
      */
-    public function edit($id = null)
+    public function edit($id = null, PostalCodeServiceInterface $postalCodeService)
     {
         // enforce PATCH and PUT method for editing an existing visit
         $this->request->allowMethod(['patch', 'put']);
@@ -144,10 +144,36 @@ class VisitsController extends AppController
             throw new NotFoundException('Visit could not be found');
         }
 
+        // update the current visit with new data
         $visit = $this->Visits->patchEntity($visit, $data);
 
         if($visit->hasErrors()) {
+            // throw is the visit fields are invalid
             throw new BadRequestException(json_encode($visit->getErrors()));
+        }
+
+        if (!empty($addressData)) {
+            // find the information related to the postal_code
+            $postalCodeData = $postalCodeService->fetchPostalCode($addressData['postal_code']);
+
+            // update the address data with the postal code service values
+            $addressData['city'] = $postalCodeData['city'];
+            $addressData['state'] = $postalCodeData['state'];
+
+            if (!isset($addressData['sublocality'])) {
+                $addressData['sublocality'] = $postalCodeData['sublocality'];
+            }
+
+            if (!isset($addressData['street'])) {
+                $addressData['street'] = $postalCodeData['street'];
+            }
+
+            if (!isset($addressData['complement'])) {
+                $addressData['commplement'] = $postalCodeData['complement'] ?? '';
+            }
+
+            // Set address data into the current visit
+            $visit->set('address', $addressData);
         }
 
         if (!$this->Visits->save($visit)) {
