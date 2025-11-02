@@ -61,38 +61,34 @@ class AddressesTable extends Table
 
         $validator
             ->scalar('postal_code')
+            ->minLength('postal_code', 8)
             ->maxLength('postal_code', 8)
-            ->requirePresence('postal_code', 'create')
-            ->notEmptyString('postal_code');
+            ->requirePresence('postal_code')
+            ->notEmptyString('postal_code')
+            ->add('postal_code', 'numericOnly', [
+                'rule' => ['custom', '/^\d+$/']
+            ]);
 
         $validator
             ->scalar('state')
-            ->maxLength('state', 2)
-            ->requirePresence('state', 'create')
-            ->notEmptyString('state');
+            ->maxLength('state', 2);
 
         $validator
             ->scalar('city')
-            ->maxLength('city', 200)
-            ->requirePresence('city', 'create')
-            ->notEmptyString('city');
+            ->maxLength('city', 200);
 
         $validator
             ->scalar('sublocality')
-            ->maxLength('sublocality', 200)
-            ->requirePresence('sublocality', 'create')
-            ->notEmptyString('sublocality');
+            ->maxLength('sublocality', 200);
 
         $validator
             ->scalar('street')
-            ->maxLength('street', 200)
-            ->requirePresence('street', 'create')
-            ->notEmptyString('street');
+            ->maxLength('street', 200);
 
         $validator
             ->integer('street_number')
             ->maxLength('street_number', 200)
-            ->requirePresence('street_number', 'create')
+            ->requirePresence('street_number')
             ->notEmptyString('street_number');
 
         $validator
