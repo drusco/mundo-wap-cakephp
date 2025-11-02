@@ -151,6 +151,12 @@ class VisitsTable extends Table
             $address->set('foreign_table', 'visits');
             $address->set('foreign_id', $visit->id);
 
+            // remove old addresses linked to the current visit
+            $addressesTable->deleteAll([
+                'foreign_table' => 'visits',
+                'foreign_id' => $visit->id
+            ]);
+
             // Save the address and link it to the visit
             $addressesTable->saveOrFail($address);
         }
