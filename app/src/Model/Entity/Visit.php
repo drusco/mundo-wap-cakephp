@@ -42,6 +42,7 @@ class Visit extends Entity
 
     protected $_virtual = [
         'formatted_date',
+        'status'
     ];
 
     /*
@@ -54,6 +55,16 @@ class Visit extends Entity
         }
 
         return null;
+    }
+
+    /** Add virtual status field */
+    protected function _getStatus(): string
+    {
+        if($this->completed) {
+            return 'Concluído';
+        }
+
+        return 'Pendente';
     }
 
     public function jsonSerialize(): array
