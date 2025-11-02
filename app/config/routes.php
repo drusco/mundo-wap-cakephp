@@ -51,6 +51,7 @@ return static function (RouteBuilder $routes) {
         // Connect API actions here.
         $builder->connect('/visits', ['controller' => 'Visits', 'action' => 'index', '_ext' => 'json']);
         $builder->connect('/visits/add', ['controller' => 'Visits', 'action' => 'add', '_ext' => 'json']);
+        $builder->connect('/visits/edit/*', ['controller' => 'Visits', 'action' => 'edit', '_ext' => 'json']);
         $builder->connect('/workdays', ['controller' => 'Workdays', 'action' => 'index', '_ext' => 'json']);
 
         /*

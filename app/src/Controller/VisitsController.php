@@ -128,19 +128,11 @@ class VisitsController extends AppController
      */
     public function edit($id = null)
     {
-        $visit = $this->Visits->get($id, [
-            'contain' => [],
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $visit = $this->Visits->patchEntity($visit, $this->request->getData());
-            if ($this->Visits->save($visit)) {
-                $this->Flash->success(__('The visit has been saved.'));
+        // enforce PATCH method for editing an existing visit
+        $this->request->allowMethod(['patch']);
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The visit could not be saved. Please, try again.'));
-        }
-        $this->set(compact('visit'));
+        $this->set('id', $id);
+        $this->viewBuilder()->setOption('serialize', ['id']);
     }
 
 }
