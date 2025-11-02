@@ -50,14 +50,6 @@ class AddressesTable extends Table
      */
     public function validationDefault(Validator $validator): Validator
     {
-        $validator
-            ->scalar('foreign_table')
-            ->maxLength('foreign_table', 100)
-            ->allowEmpty('foreign_table');
-
-        $validator
-            ->integer('foreign_id')
-            ->allowEmpty('foreign_id');
 
         $validator
             ->scalar('postal_code')
@@ -68,14 +60,6 @@ class AddressesTable extends Table
             ->add('postal_code', 'numericOnly', [
                 'rule' => ['custom', '/^\d+$/']
             ]);
-
-        $validator
-            ->scalar('state')
-            ->maxLength('state', 2);
-
-        $validator
-            ->scalar('city')
-            ->maxLength('city', 200);
 
         $validator
             ->scalar('sublocality')
