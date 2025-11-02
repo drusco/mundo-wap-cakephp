@@ -40,13 +40,10 @@ class VisitsController extends AppController
         }
 
         // Get the visits by date and paginate
-        $visits = $this->paginate(
-            $this->fetchTable('Visits')
+        $visits = $this->fetchTable('Visits')
             ->find()
             ->contain(['Addresses'])
-            ->where([
-                'date' => $visitDate
-            ])
+            ->where(['date' => $visitDate]
         );
 
         // Return the filtered visits
