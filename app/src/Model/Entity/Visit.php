@@ -37,4 +37,19 @@ class Visit extends Entity
     protected $_hidden = [
         'id',
     ];
+
+    /** Date accessor */
+    protected function _getDate($date): string
+    {
+        // the desired format
+        $format = 'd-m-Y';
+        
+        // convert FrozenDate to string format
+        if ($date instanceof FrozenDate) {
+            return $date->format($format);
+        }
+
+        // convert to DateTime and format
+        return (new \DateTime((string)$date))->format($format);
+    }
 }
