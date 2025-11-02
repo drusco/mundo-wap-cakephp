@@ -16,10 +16,12 @@ use Cake\Http\Exception\NotFoundException;
 class VisitsController extends AppController
 {
     /**
-     * Index method
      * Lists all visits for a given date provided as query parameter.
      *
      * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Http\Exception\NotFoundException When record not found.
+     * @throws \Cake\Http\Exception\InternalErrorException When the update fails.
+     * @throws \Cake\Http\Exception\BadRequestException When the incoming payload is invalid.
      */
     public function index(): void
     {
@@ -53,11 +55,13 @@ class VisitsController extends AppController
     }
 
     /**
-     * Add method
      * Create a new visit record
      *
      * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
+     * @throws \Cake\Http\Exception\NotFoundException When record not found.
+     * @throws \Cake\Http\Exception\InternalErrorException When the update fails.
+     * @throws \Cake\Http\Exception\BadRequestException When the incoming payload is invalid.
+    */
     public function add(PostalCodeServiceInterface $postalCodeService): void
     {
         // enforce POST method for adding a new visit
@@ -121,11 +125,13 @@ class VisitsController extends AppController
     }
 
     /**
-     * Edit method
+     * Updates and existing visit
      *
      * @param string|null $id Visit id.
      * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Http\Exception\NotFoundException When record not found.
+     * @throws \Cake\Http\Exception\InternalErrorException When the update fails.
+     * @throws \Cake\Http\Exception\BadRequestException When the incoming payload is invalid.
      */
     public function edit($id = null, PostalCodeServiceInterface $postalCodeService)
     {
