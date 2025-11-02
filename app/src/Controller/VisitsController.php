@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Service\Interface\PostalCodeServiceInterface;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\BadRequestException;
+use Cake\Http\Exception\NotFoundException;
 
 /**
  * Visits Controller
@@ -124,15 +125,38 @@ class VisitsController extends AppController
      *
      * @param string|null $id Visit id.
      * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     * @throws \Cake\Http\Exception\NotFoundException When record not found.
      */
     public function edit($id = null)
     {
-        // enforce PATCH method for editing an existing visit
-        $this->request->allowMethod(['patch']);
+        // enforce PATCH and PUT method for editing an existing visit
+        $this->request->allowMethod(['patch', 'put']);
 
-        $this->set('id', $id);
-        $this->viewBuilder()->setOption('serialize', ['id']);
+        $data = $this->request->getData();
+        $addressData = $data['address'] ?? [];
+
+        $visit = $this->fetchTable('Visits')->find()
+            ->where(['id' => $id])
+            ->first();
+
+        if (empty($visit)) {
+            // throw an error if the visit cannot be found
+            throw new NotFoundException('Visit could not be found');
+        }
+
+        $visit = $this->Visits->patchEntity($visit, $data);
+
+        if($visit->hasErrors()) {
+            throw new BadRequestException(json_encode($visit->getErrors()));
+        }
+
+        // indicate that the visit was updated correctly
+        $this->set([
+            'success' => true,
+            'message' => 'The visit has been updated.'
+        ]);
+
+        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
     }
 
 }
