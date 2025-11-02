@@ -137,20 +137,39 @@ class VisitsTable extends Table
 
         // Find or create a workday using the visit date
         $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
-
         $isNewWorkday = false;
         
         /** @var \App\Model\Entity\Workday */
         $workday = $workdaysTable->findOrCreate(
             ['date' => $visit->date],
-            function ($entity) use ($visit, $newDuration, &$isNewWorkday): void {
-                // set default values on the new workday
-                $entity->set('date', $visit->date);
+            function () use (&$isNewWorkday): void {
                 $isNewWorkday = true;
             }
         );
 
-        if (!$isNewWorkday) {
+        if ($isNewWorkday) {
+            // set default values on the new workday
+            $workday->set('date', $visit->date);
+
+            // get the stored visit entity
+            /** @var \App\Model\Entity\Visit */
+            $currentVisit = $this->find()
+                ->where(['id' => $visit->id])
+                ->first();
+
+            // find previous workday
+            /** @var \App\Model\Entity\Workday */
+            $prevWorkday = $workdaysTable->find()
+                ->where(['date' => $currentVisit->date])
+                ->first();
+
+            // update previous workday
+            $prevWorkday->set('duration', $prevWorkday->duration - $currentVisit->duration);
+            $prevWorkday->set('visits', $prevWorkday->visits - 1);
+
+            $workdaysTable->saveOrFail($prevWorkday);
+            
+        } else {
             // substract previous duration and visit
             $workday->set('duration', $workday->duration - $visit->duration);
             $workday->set('visits', $workday->visits - 1);
