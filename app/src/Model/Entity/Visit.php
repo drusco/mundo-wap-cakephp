@@ -36,6 +36,7 @@ class Visit extends Entity
 
     protected $_hidden = [
         'id',
+        'duration',
         'formatted_date'
     ];
 
