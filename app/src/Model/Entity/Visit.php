@@ -36,20 +36,36 @@ class Visit extends Entity
 
     protected $_hidden = [
         'id',
+        'formatted_date'
     ];
 
-    /** Date accessor */
-    protected function _getDate($date): string
+    protected $_virtual = [
+        'formatted_date',
+    ];
+
+    /*
+     * Get formatted date as dd-mm-yyyy
+     */
+    protected function _getFormattedDate(): ?string
     {
-        // the desired format
-        $format = 'd-m-Y';
-        
-        // convert FrozenDate to string format
-        if ($date instanceof FrozenDate) {
-            return $date->format($format);
+        if (isset($this->date)) {
+            return $this->date->format('d-m-Y');
         }
 
-        // convert to DateTime and format
-        return (new \DateTime((string)$date))->format($format);
+        return null;
+    }
+
+    public function jsonSerialize(): array
+    {
+        $data = parent::jsonSerialize();
+        // Replace date with formatted date
+        if (isset($data['date'])) {
+            $data['date'] = $this->formatted_date;
+        }
+
+        // show completed as boolean
+        $data['completed'] = (bool) $data['completed'];
+
+        return $data;
     }
 }

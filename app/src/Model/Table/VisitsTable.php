@@ -114,12 +114,9 @@ class VisitsTable extends Table
             $data['completed'] = (int) $data['completed'];
         }
 
-        // convert date from dd-mm-yyyy to yyyy-mm-dd
+        // convert date from string to DateTime
         if (isset($data['date'])) {
-            $date = \DateTime::createFromFormat('d-m-Y', $data['date']);
-            if ($date) {
-                $data['date'] = $date;
-            }
+            $data['date'] = \DateTime::createFromFormat('d-m-Y', $data['date']);
         }
     }
     public function afterSave(EventInterface $event, EntityInterface $visit, \ArrayObject $options): void
