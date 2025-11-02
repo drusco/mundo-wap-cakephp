@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\Interface\PostalCodeServiceInterface;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\BadRequestException;
 
@@ -40,7 +41,7 @@ class VisitsController extends AppController
 
         // Get the visits by date and paginate
         $visits = $this->paginate(
-            $this->Visits
+            $this->fetchTable('Visits')
             ->find()
             ->contain(['Addresses'])
             ->where([
@@ -59,12 +60,13 @@ class VisitsController extends AppController
      *
      * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
      */
-    public function add(): void
+    public function add(PostalCodeServiceInterface $postalCodeService): void
     {
         // enforce POST method for adding a new visit
         $this->request->allowMethod(['post']);
 
         $data = $this->request->getData();
+        $addressData = $data['address'];
 
         // create and patch a new visit entity
         $visit = $this->Visits->newEmptyEntity();
@@ -75,8 +77,33 @@ class VisitsController extends AppController
             throw new BadRequestException( json_encode($visit->getErrors()) );
         }
 
+        // find the information related to the postal_code
+        $postalCodeData = $postalCodeService->fetchPostalCode($addressData['postal_code']);
+
+        if (empty($postalCodeData)) {
+            // throw an error when the posta_code is not found
+            throw new BadRequestException('CEP não encontrado');
+        }
+
+        // update the address data with the postal code service values
+
+        $addressData['city'] = $postalCodeData['city'];
+        $addressData['state'] = $postalCodeData['state'];
+
+        if (!isset($addressData['sublocality'])) {
+            $addressData['sublocality'] = $postalCodeData['sublocality'];
+        }
+
+        if (!isset($addressData['street'])) {
+            $addressData['street'] = $postalCodeData['street'];
+        }
+
+        if (!isset($addressData['complement'])) {
+            $addressData['commplement'] = $postalCodeData['complement'] ?? '';
+        }
+
         // Attach the address to the visit
-        $visit->set('address', $data['address']);
+        $visit->set('address', $addressData);
         
         if (!$this->Visits->save($visit)) {
         // throw if saving to the database fails
