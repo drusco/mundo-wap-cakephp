@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Model\Entity\Visit;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 use Cake\ORM\Query;
@@ -127,7 +128,18 @@ class VisitsTable extends Table
             $data['date'] = \DateTime::createFromFormat('d-m-Y', $data['date']);
         }
     }
-    public function afterSave(EventInterface $event, EntityInterface $visit, \ArrayObject $options): void
+
+    public function beforeSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
+    {
+
+        // Set the duration value based on the forms and product minutes
+        $formsMinutes = (int)$visit->forms * 15;
+        $productsMinutes = (int) $visit->products * 5;
+        
+        $visit->set('duration', $formsMinutes + $productsMinutes);
+    }
+
+    public function afterSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
     {
         // If the visit has an associated address, ensure it's linked correctly
         if ($visit->has('address')) {

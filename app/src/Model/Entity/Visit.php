@@ -31,7 +31,7 @@ class Visit extends Entity
         'completed' => true,
         'forms' => true,
         'products' => true,
-        'duration' => true,
+        '*' => false
     ];
 
     protected $_hidden = [
