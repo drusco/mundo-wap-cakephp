@@ -60,9 +60,6 @@ class Workday extends Entity
             $data['date'] = $this->formatted_date;
         }
 
-        // show completed as boolean
-        $data['completed'] = (bool) $data['completed'];
-
         return $data;
     }
 }
