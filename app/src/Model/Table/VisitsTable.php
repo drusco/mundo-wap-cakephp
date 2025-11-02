@@ -130,12 +130,37 @@ class VisitsTable extends Table
 
     public function beforeSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
     {
-
         // Set the duration value based on the forms and product minutes
         $formsMinutes = (int)$visit->forms * 15;
         $productsMinutes = (int) $visit->products * 5;
+        $newDuration = $formsMinutes + $productsMinutes;
 
-        $visit->set('duration', $formsMinutes + $productsMinutes);
+        // Find or create a workday using the visit date
+        $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
+        
+        /** @var \App\Model\Entity\Workday */
+        $workday = $workdaysTable->findOrCreate(
+            ['date' => $visit->date],
+            function ($entity) use ($visit): void {
+                // set the date on the newly created workday
+                $entity->set('date', $visit->date);
+            }
+        );
+
+        if (!$visit->isNew()) {
+            // substract previous duration and visit
+            $workday->set('duration', $workday->duration - $visit->duration);
+            $workday->set('visits', $workday->visits - 1);
+        }
+
+        // set new values on the workday
+        $workday->set('duration', $workday->duration + $newDuration);
+        $workday->set('visits', $workday->visits + 1);
+
+        // save the workday to the database
+        $workdaysTable->saveOrFail($workday);
+
+        $visit->set('duration', $newDuration);
     }
 
     public function afterSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
@@ -160,25 +185,5 @@ class VisitsTable extends Table
             // Save the address and link it to the visit
             $addressesTable->saveOrFail($address);
         }
-
-        // Find or create a workday using the visit date
-        $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
-        
-        /** @var \App\Model\Entity\Workday */
-        $workday = $workdaysTable->findOrCreate(
-            ['date' => $visit->date],
-            function ($entity) use ($visit): void {
-                // create a new workday if it does not exist already
-                $entity->set('date', $visit->date);
-            }
-        );
-
-        // update the visits counter
-        $workday->set('visits', $workday->visits + 1);
-        // update the duration total
-        $workday->set('duration', $workday->duration + $visit->duration);
-
-        $workdaysTable->saveOrFail($workday);
-
     }
 }
