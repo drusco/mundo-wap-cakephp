@@ -30,5 +30,10 @@ class Workday extends Entity
         'visits' => true,
         'completed' => true,
         'duration' => true,
+        '*' => false,
+    ];
+
+    protected $_hidden = [
+        'id'
     ];
 }
