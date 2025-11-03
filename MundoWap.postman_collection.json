@@ -1,0 +1,167 @@
+{
+	"info": {
+		"_postman_id": "8efa0cb5-f8af-4c8e-878a-97a24ea05c27",
+		"name": "MundoWap",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14519620"
+	},
+	"item": [
+		{
+			"name": "List  Workdays",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:13001/workdays",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "13001",
+					"path": [
+						"workdays"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "10",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "0",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Visits",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:13001/visits?date=01-01-2000&page=0&limit=10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "13001",
+					"path": [
+						"visits"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "01-01-2000"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Visit",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"forms\": 1,\n    \"products\": 1,\n    \"date\": \"01-01-2000\",\n    \"completed\": false,\n    \"address\": {\n        \"postal_code\": \"88010500\",\n        \"street_number\": \"199\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:13001/visits/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "13001",
+					"path": [
+						"visits",
+						"add"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Visit",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"forms\": 5,\n    \"products\": 4,\n    \"date\": \"01-01-2000\",\n    \"completed\": true,\n    \"address\": {\n        \"postal_code\": \"88020500\",\n        \"street_number\": \"1101\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:13001/visits/edit/393",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "13001",
+					"path": [
+						"visits",
+						"edit",
+						"393"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "End the workday",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:13001/workdays/end/?date=01-01-2000",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "13001",
+					"path": [
+						"workdays",
+						"end",
+						""
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "01-01-2000"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
