@@ -73,6 +73,12 @@ return static function (RouteBuilder $routes) {
             '_ext' => 'json'
         ]);
 
+        $builder->connect('/workdays/end', [
+            'controller' => 'Workdays', 
+            'action' => 'end', 
+            '_ext' => 'json'
+        ]);
+
         /*
          * Connect catchall routes for all controllers.
          *

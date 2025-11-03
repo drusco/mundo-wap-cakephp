@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Http\Exception\BadRequestException;
+
 /**
  * Workdays Controller
  *
@@ -17,7 +19,7 @@ class WorkdaysController extends AppController
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
-    public function index()
+    public function index(): void
     {
         // Accept GEt requests only when listing visits
         $this->request->allowMethod(['get']);
@@ -32,31 +34,37 @@ class WorkdaysController extends AppController
             'success' => true,
             'data' => $workdays
         ]);
+
         $this->viewBuilder()->setOption('serialize', ['success', 'data']);
     }
 
     /**
-     * Edit method
+     * End the desired workday
      *
-     * @param string|null $id Workday id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     * @return \Cake\Http\Response|null|void Renders view on successful closing.
+     * @throws \Cake\Http\Exception\NotFoundException When record not found.
+     * @throws \Cake\Http\Exception\InternalErrorException When the update fails.
+     * @throws \Cake\Http\Exception\BadRequestException When the incoming payload is invalid.
      */
-    public function edit($id = null)
+    public function end(): void
     {
-        $workday = $this->Workdays->get($id, [
-            'contain' => [],
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $workday = $this->Workdays->patchEntity($workday, $this->request->getData());
-            if ($this->Workdays->save($workday)) {
-                $this->Flash->success(__('The workday has been saved.'));
+        // Accept PUT requests only
+        $this->request->allowMethod(['put']);
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The workday could not be saved. Please, try again.'));
+        $date = $this->request->getQuery('date');
+        
+        if(empty($date)) {
+            // enforce date query parameter
+            throw new BadRequestException('A date query parameter is required');
         }
-        $this->set(compact('workday'));
+
+         // return response
+        $this->set([
+            'success' => true,
+            'data' => []
+        ]);
+        
+        $this->viewBuilder()->setOption('serialize', ['success', 'data']);
     }
 
 }
