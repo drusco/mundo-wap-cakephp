@@ -107,9 +107,13 @@ class VisitsController extends AppController
         // Attach the address to the visit
         $visit->set('address', $addressData);
         
-        if (!$this->Visits->save($visit)) {
-        // throw if saving to the database fails
-           throw new InternalErrorException('The visit could not be saved.');
+        try {
+            $this->Visits->save($visit);
+        } catch (\Exception $e) {
+            // throw if saving to the database fails
+            debug($e->getMessage());
+            debug($e->getTrace());
+            throw new InternalErrorException('The visit could not be saved.');
         }
 
         // Indicate success
@@ -133,7 +137,7 @@ class VisitsController extends AppController
      * @throws \Cake\Http\Exception\InternalErrorException When the update fails.
      * @throws \Cake\Http\Exception\BadRequestException When the incoming payload is invalid.
      */
-    public function edit($id = null, PostalCodeServiceInterface $postalCodeService)
+    public function edit(PostalCodeServiceInterface $postalCodeService, $id = null): void
     {
         // enforce PATCH and PUT method for editing an existing visit
         $this->request->allowMethod(['patch', 'put']);
@@ -182,9 +186,13 @@ class VisitsController extends AppController
             $visit->set('address', $addressData);
         }
 
-        if (!$this->Visits->save($visit)) {
+        try {
+            $this->Visits->save($visit);
+        } catch(\Exception $e) {
             // throw if saving to the database fails
-           throw new InternalErrorException('The visit could not be saved.');
+            debug($e->getMessage());
+            debug($e->getTrace());
+            throw new InternalErrorException('The visit could not be saved.');
         }
 
         // indicate that the visit was updated correctly

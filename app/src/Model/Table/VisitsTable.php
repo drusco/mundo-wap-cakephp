@@ -151,23 +151,25 @@ class VisitsTable extends Table
             // set default values on the new workday
             $workday->set('date', $visit->date);
 
-            // get the stored visit entity
-            /** @var \App\Model\Entity\Visit */
-            $currentVisit = $this->find()
-                ->where(['id' => $visit->id])
-                ->first();
+            if (!$visit->isNew()) {
+                // get the stored visit entity
+                /** @var \App\Model\Entity\Visit */
+                $currentVisit = $this->find()
+                    ->where(['id' => $visit->id])
+                    ->first();
 
-            // find previous workday
-            /** @var \App\Model\Entity\Workday */
-            $prevWorkday = $workdaysTable->find()
-                ->where(['date' => $currentVisit->date])
-                ->first();
+                // find previous workday
+                /** @var \App\Model\Entity\Workday */
+                $prevWorkday = $workdaysTable->find()
+                    ->where(['date' => $currentVisit->date])
+                    ->first();
 
-            // update previous workday
-            $prevWorkday->set('duration', $prevWorkday->duration - $currentVisit->duration);
-            $prevWorkday->set('visits', $prevWorkday->visits - 1);
+                // update previous workday
+                $prevWorkday->set('duration', $prevWorkday->duration - $currentVisit->duration);
+                $prevWorkday->set('visits', $prevWorkday->visits - 1);
 
-            $workdaysTable->saveOrFail($prevWorkday);
+                $workdaysTable->saveOrFail($prevWorkday);
+            }
             
         } else {
             // substract previous duration and visit
