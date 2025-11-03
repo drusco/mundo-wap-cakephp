@@ -58,6 +58,15 @@ class WorkdaysController extends AppController
             throw new BadRequestException('A date query parameter is required');
         }
 
+        $dateFormat = 'd-m-Y';
+        $dateObject = \DateTime::createFromFormat($dateFormat, $date);
+        $isValidDate = $dateObject && $dateObject->format($dateFormat) === $date;
+
+        // validate date query parameter
+        if (!$isValidDate) {
+            throw new BadRequestException('Date query parameter expects the format: dd-mm-yyyy');
+        }
+
          // return response
         $this->set([
             'success' => true,
