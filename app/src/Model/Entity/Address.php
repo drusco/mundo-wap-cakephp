@@ -47,5 +47,26 @@ class Address extends Entity
         'foreign_id',
         'state',
         'city',
+        'postal_code_formatted'
     ];
+
+    protected $_virtual = [
+        'postal_code_formatted'
+    ];
+
+    protected function _getPostalCodeFormatted(): string
+    {
+        $postalCode = $this->postal_code;
+        return substr($postalCode, 0, 5) . '-' . substr($postalCode, 5);
+    }
+
+    public function jsonSerialize(): array
+    {
+        $data = parent::jsonSerialize();
+
+        // show postal_code with format
+        $data['postal_code'] = $this->postal_code_formatted;
+
+        return $data;
+    }
 }
