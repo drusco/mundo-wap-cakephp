@@ -23,11 +23,16 @@ class WorkdaysController extends AppController
         $this->request->allowMethod(['get']);
 
         // find the workdays entries
-        $workdays = $this->fetchTable('Workdays')->find();
+        $workdays = $this->paginate(
+            $this->fetchTable('Workdays')->find()
+        );
 
         // return work days
-        $this->set('workdays', $workdays);
-        $this->viewBuilder()->setOption('serialize', ['workdays']);
+        $this->set([
+            'success' => true,
+            'data' => $workdays
+        ]);
+        $this->viewBuilder()->setOption('serialize', ['success', 'data']);
     }
 
     /**
