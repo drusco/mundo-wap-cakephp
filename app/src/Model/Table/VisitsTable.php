@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use App\Model\Entity\Visit;
+use App\Model\Entity\Workday;
 use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
@@ -115,6 +116,35 @@ class VisitsTable extends Table
         return $validator;
     }
 
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        // define a rule to check if the workday duration is exceeded
+        $maxDuration = 60 * 8;
+
+        $rules->add(function (Visit $visit, $options) use ($maxDuration): bool {
+            $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
+            /** @var Workday|null */
+            $workday = $workdaysTable->find()
+                ->where(['date' => $visit->date])
+                ->first();
+
+            $formsMinutes = (int)$visit->forms * 15;
+            $productsMinutes = (int)$visit->products * 5;
+            $newDuration = $formsMinutes + $productsMinutes;
+
+            // get the expected duration
+            $total = ($workday->duration ?? 0) + $newDuration;
+
+            // check if the final duration is within the maximum limmits
+            return $total <= $maxDuration;
+        }, 'maxDuration', [
+            'errorField' => 'duration',
+            'message' => 'Limite de horas atingido',
+        ]);
+
+        return $rules;
+    }
+
     public function beforeMarshal(EventInterface $event, \ArrayObject $data, \ArrayObject $options): void
     {
         // convert boolean completed to integer
@@ -130,30 +160,55 @@ class VisitsTable extends Table
 
     public function beforeSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
     {
-        // Set the duration value based on the forms and product minutes
-        $formsMinutes = (int)$visit->forms * 15;
-        $productsMinutes = (int) $visit->products * 5;
-        $newDuration = $formsMinutes + $productsMinutes;
+        $this->updateWorkdayVisit($visit);
+    }
 
+    public function afterSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
+    {
+        // If the visit has an associated address, ensure it's linked correctly
+        if ($visit->has('address')) {
+            $addressData = $visit->get('address');
+
+            $addressesTable = TableRegistry::getTableLocator()->get('Addresses');
+            $address = $addressesTable->newEntity($addressData);
+
+            // Add foreign key fields to address data
+            $address->set('foreign_table', 'visits');
+            $address->set('foreign_id', $visit->id);
+
+            // remove old addresses linked to the current visit
+            $addressesTable->deleteAll([
+                'foreign_table' => 'visits',
+                'foreign_id' => $visit->id
+            ]);
+
+            // Save the address and link it to the visit
+            $addressesTable->saveOrFail($address);
+        }
+    }
+
+    private function updateWorkdayVisit(Visit $visit): void
+    {
         // Find or create a workday using the visit date
         $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
         $isNewWorkday = false;
         
         // get the stored visit entity
-        /** @var \App\Model\Entity\Visit|null */
-        $currentVisit = null;
-
-        if(!empty($visit->id)) {
-            $currentVisit = $this->get($visit->id);
-        }
+        /** @var Visit|null */
+        $currentVisit = $visit->isNew() ? null : $this->get($visit->id);
         
-        /** @var \App\Model\Entity\Workday */
+        /** @var Workday */
         $workday = $workdaysTable->findOrCreate(
             ['date' => $visit->date],
             function () use (&$isNewWorkday): void {
                 $isNewWorkday = true;
             }
         );
+
+        // Set the duration value based on the forms and product minutes
+        $formsMinutes = (int)$visit->forms * 15;
+        $productsMinutes = (int) $visit->products * 5;
+        $newDuration = $formsMinutes + $productsMinutes;
 
         if ($isNewWorkday) {
             // set default values on the new workday
@@ -223,29 +278,5 @@ class VisitsTable extends Table
         $workdaysTable->saveOrFail($workday);
 
         $visit->set('duration', $newDuration);
-    }
-
-    public function afterSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
-    {
-        // If the visit has an associated address, ensure it's linked correctly
-        if ($visit->has('address')) {
-            $addressData = $visit->get('address');
-
-            $addressesTable = TableRegistry::getTableLocator()->get('Addresses');
-            $address = $addressesTable->newEntity($addressData);
-
-            // Add foreign key fields to address data
-            $address->set('foreign_table', 'visits');
-            $address->set('foreign_id', $visit->id);
-
-            // remove old addresses linked to the current visit
-            $addressesTable->deleteAll([
-                'foreign_table' => 'visits',
-                'foreign_id' => $visit->id
-            ]);
-
-            // Save the address and link it to the visit
-            $addressesTable->saveOrFail($address);
-        }
     }
 }

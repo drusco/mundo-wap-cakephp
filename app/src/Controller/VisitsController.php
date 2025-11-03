@@ -107,13 +107,13 @@ class VisitsController extends AppController
         // Attach the address to the visit
         $visit->set('address', $addressData);
         
-        try {
-            $this->Visits->save($visit);
-        } catch (\Exception $e) {
+        if (!$this->Visits->save($visit)) {
+            $errors = $visit->getErrors();
             // throw if saving to the database fails
-            debug($e->getMessage());
-            debug($e->getTrace());
-            throw new InternalErrorException('The visit could not be saved.');
+            if (isset($errors['duration']) && isset($errors['duration']['maxDuration'])) {
+                throw new BadRequestException($errors['duration']['maxDuration']);
+            }
+            throw new InternalErrorException(json_encode($errors));
         }
 
         // Indicate success
@@ -186,13 +186,13 @@ class VisitsController extends AppController
             $visit->set('address', $addressData);
         }
 
-        try {
-            $this->Visits->save($visit);
-        } catch(\Exception $e) {
+        if (!$this->Visits->save($visit)) {
+            $errors = $visit->getErrors();
             // throw if saving to the database fails
-            debug($e->getMessage());
-            debug($e->getTrace());
-            throw new InternalErrorException('The visit could not be saved.');
+            if (isset($errors['duration']) && isset($errors['duration']['maxDuration'])) {
+                throw new BadRequestException($errors['duration']['maxDuration']);
+            }
+            throw new InternalErrorException(json_encode($errors));
         }
 
         // indicate that the visit was updated correctly
