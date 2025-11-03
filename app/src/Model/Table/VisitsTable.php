@@ -139,6 +139,14 @@ class VisitsTable extends Table
         $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
         $isNewWorkday = false;
         
+        // get the stored visit entity
+        /** @var \App\Model\Entity\Visit|null */
+        $currentVisit = null;
+
+        if(!empty($visit->id)) {
+            $currentVisit = $this->get($visit->id);
+        }
+        
         /** @var \App\Model\Entity\Workday */
         $workday = $workdaysTable->findOrCreate(
             ['date' => $visit->date],
@@ -151,13 +159,8 @@ class VisitsTable extends Table
             // set default values on the new workday
             $workday->set('date', $visit->date);
 
+            // visit 'date' value has changed
             if (!$visit->isNew()) {
-                // get the stored visit entity
-                /** @var \App\Model\Entity\Visit */
-                $currentVisit = $this->find()
-                    ->where(['id' => $visit->id])
-                    ->first();
-
                 // find previous workday
                 /** @var \App\Model\Entity\Workday */
                 $prevWorkday = $workdaysTable->find()
@@ -168,6 +171,15 @@ class VisitsTable extends Table
                 $prevWorkday->set('duration', $prevWorkday->duration - $currentVisit->duration);
                 $prevWorkday->set('visits', $prevWorkday->visits - 1);
 
+                // remove completed visit from the previous workday
+                if ($currentVisit->completed === $visit->completed) {
+                    $prevWorkday->set('completed', $prevWorkday->completed - 1);
+                    // update the new workday as well
+                    if ($visit->completed) {
+                        $workday->set('completed', 1);
+                    }
+                }
+
                 $workdaysTable->saveOrFail($prevWorkday);
             }
             
@@ -175,6 +187,32 @@ class VisitsTable extends Table
             // substract previous duration and visit
             $workday->set('duration', $workday->duration - $visit->duration);
             $workday->set('visits', $workday->visits - 1);
+        }
+
+        if (empty($currentVisit)) {
+            /** 
+             * This is a new visit entity 
+             * Visit values can be updated based on their current state 
+            */
+
+            // If the visit is completed add it to the current workday
+            if ($visit->completed) {
+                $workday->set('completed', $workday->completed + 1);
+            }
+        } else {
+            /** 
+             * The visit entity is being updated 
+             * Properties from the new and old visit entities can be compared
+             * */
+
+            if ($currentVisit->completed != $visit->completed) {
+                // the 'completed' value has changed
+                if ($visit->completed) {
+                    $workday->set('completed', $workday->completed + 1);
+                } else {
+                    $workday->set('completed', $workday->completed - 1);
+                }
+            }
         }
 
         // set new values on the workday
