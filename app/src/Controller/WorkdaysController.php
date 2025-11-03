@@ -127,13 +127,29 @@ class WorkdaysController extends AppController
                 if ($workdayDuration + $visitDuration <= $maxDuration) {
                     // move the visit to the next date
                     $visit->set('date', $nextDate);
+
                     if ($visitsTable->save($visit)) {
                         $movedVisitsCount++;
                     }
+
+                    // find the previous workday
+                    /** @var \App\Model\Entity\Workday */
+                    $prevWorkday = $workdaysTable->find()
+                        ->where([
+                            'date' => (clone $nextDate)->modify('-1 day')
+                        ])
+                        ->first();
+
+                    // update the previous workday entity
+                    if ($prevWorkday) {
+                        $prevWorkday->set('date', $prevWorkday->date);
+                        $workdaysTable->save($prevWorkday);
+                    }
+
                     break;
                 }
 
-                // try to move to the next date
+                // try moving the pending visit to the next date
                 $nextDate = (clone $nextDate)->modify('+1 day');
             }
         }
