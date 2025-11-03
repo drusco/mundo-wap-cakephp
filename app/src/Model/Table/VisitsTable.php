@@ -6,6 +6,7 @@ namespace App\Model\Table;
 use App\Model\Entity\Visit;
 use App\Model\Entity\Workday;
 use Cake\Event\EventInterface;
+use Cake\I18n\FrozenDate;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -166,6 +167,17 @@ class VisitsTable extends Table
         $newDuration = $formsMinutes + $productsMinutes;
 
         $visit->set('duration', $newDuration);
+
+        // access current visit entity and set the previous date
+        if (!$visit->isNew()) {
+            $previousVisit = $this->get($visit->id);
+            if ($previousVisit->date->format('d-m-Y') != $visit->date->format('d-m-Y')) {
+                // the date field is about to change
+                // keep a reference of the old value
+                $visit->set('previous_date', $previousVisit->date);
+            }
+        }
+        
     }
 
     public function afterSave(EventInterface $event, Visit $visit, \ArrayObject $options): void
@@ -192,22 +204,33 @@ class VisitsTable extends Table
         }
 
         // update the workday informations
-        $this->updateWorkday($visit);
+        $this->updateWorkday($visit->date);
+
+        // update the old workday informations
+        if ($visit->has('previous_date')) {
+            $this->updateWorkday($visit->get('previous_date'));
+        }
     }
 
-    private function updateWorkday(Visit $visit): void
+    /**
+     * Forces an update on the workday
+     * 
+     * @param \Cake\I18n\FrozenDate|\DateTime $date
+     * @return void
+     */
+    private function updateWorkday(FrozenDate|\DateTime $date): void
     {
         // Find or create a workday using the visit date
         $workdaysTable = TableRegistry::getTableLocator()->get('Workdays');
         
         /** @var Workday */
         $workday = $workdaysTable->findOrCreate(
-            ['date' => $visit->date]
+            ['date' => $date]
         );
 
         if (!$workday->isNew()) {
             // force an update on the workday
-            $workday->set('date', $visit->date);
+            $workday->set('date', $date);
             // save the workday to the database
             $workdaysTable->saveOrFail($workday);
         }
