@@ -119,13 +119,14 @@ class VisitsController extends AppController
         // Indicate success
         $this->set([
             'success' => true,
-            'message' => 'The visit has been saved.'
+            'data' => $visit,
+            'message' => 'The visit has been created.'
         ]);
 
         // Add the created status code
         $this->response = $this->response->withStatus(201);
         // Serialize the success response
-        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+        $this->viewBuilder()->setOption('serialize', ['success', 'message', 'data']);
     }
 
     /**
@@ -198,10 +199,11 @@ class VisitsController extends AppController
         // indicate that the visit was updated correctly
         $this->set([
             'success' => true,
+            'data' => $visit,
             'message' => 'The visit has been updated.'
         ]);
 
-        $this->viewBuilder()->setOption('serialize', ['success', 'message']);
+        $this->viewBuilder()->setOption('serialize', ['success', 'message', 'data']);
     }
 
 }
