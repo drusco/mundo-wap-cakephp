@@ -43,15 +43,20 @@ class VisitsController extends AppController
         }
 
         // Get the visits by date and paginate
-        $visits = $this->fetchTable('Visits')
+        $visits = $this->paginate(
+            $this->fetchTable('Visits')
             ->find()
             ->contain(['Addresses'])
-            ->where(['date' => $visitDate]
+            ->where(['date' => $visitDate])
         );
 
         // Return the filtered visits
-        $this->set('visits', $visits);
-        $this->viewBuilder()->setOption('serialize', ['visits']);
+        $this->set([
+            'success' => true,
+            'data' => $visits,
+        ]);
+
+        $this->viewBuilder()->setOption('serialize', ['success', 'data']);
     }
 
     /**
