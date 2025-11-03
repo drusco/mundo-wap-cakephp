@@ -42,7 +42,6 @@ class WorkdaysController extends AppController
      * End the desired workday
      *
      * @return \Cake\Http\Response|null|void Renders view on successful closing.
-     * @throws \Cake\Http\Exception\NotFoundException When record not found.
      * @throws \Cake\Http\Exception\InternalErrorException When the update fails.
      * @throws \Cake\Http\Exception\BadRequestException When the incoming payload is invalid.
      */
