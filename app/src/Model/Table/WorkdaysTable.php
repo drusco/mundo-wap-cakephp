@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Model\Entity\Workday;
+use Cake\Event\EventInterface;
 use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 
 /**
@@ -68,5 +71,25 @@ class WorkdaysTable extends Table
             ->notEmptyString('duration');
 
         return $validator;
+    }
+
+    public function beforeSave(EventInterface $event, Workday $workday, \ArrayObject $options): void
+    {
+        // get the visits table
+        $visitsTable = TableRegistry::getTableLocator()->get('Visits');
+
+        // find all visits for this workday date
+        $visits = $visitsTable->find()
+            ->where(['date' => $workday->date])
+            ->all();
+
+        $totalVisits = $visits->count();
+        $completedVisits = $visits->filter(fn ($visit): bool => (bool)$visit->completed)->count();
+        $totalDuration = $visits->sumOf('duration');
+
+        // update all fields
+        $workday->set('visits', $totalVisits);
+        $workday->set('completed', $completedVisits);
+        $workday->set('duration', $totalDuration);
     }
 }
